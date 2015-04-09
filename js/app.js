@@ -1,8 +1,8 @@
 $(function(){
 
-  var roundInProgress = false;
+  var roundProgress = 'new';
   $('#spin').on('click', function() {
-    if ( !roundInProgress ) { 
+    if ( roundProgress === 'new' ) { 
       play();
     }
   })
@@ -28,20 +28,25 @@ $(function(){
     setTimeout(function(){stopReels = true;}, 3000);
   }
 
+  var finalPositions;
+  function endRound(){
+    finalPositions = getFinalPositions();
+  }
+
   var stopReels = false;
   var spins = {};
   var drinks = {};
-  var finalPositions = {}
   function spinReel() {
     var reel = this[0];
     spins[reel] = window.requestAnimationFrame(spinReel.bind(reel));
     var currentPosition = parseInt(currentReelPositions()[reel]);
     if ( stopReels ) {
-      finalPositions[id] = finalPositions[id] || getFinalPosition();
-      if ( (currentPosition - finalPosition.adjustment) % 600 === 0 ) {
-      drinks[reel] = drinks[reel] || finalPosition.drink;
+      var finalPosition = getFinalPosition();
+      drinks[reel] = finalPosition.drink;
+      while ( (currentPosition - finalPosition.adjustment) % 600 !== 0 ) {
+        $('#reel-' + reel).css('background-position-y', currentPosition + 20 + 'px');
+      }
       if ( reelsSpinning-- === 0 ) { finishRound(); }
-      window.cancelAnimationFrame(spins[reel]);
     } else {
       spins[reel] = window.requestAnimationFrame(spinReel.bind(reel));
       $('#reel-' + reel).css('background-position-y', currentPosition + 20 + 'px');
@@ -49,8 +54,9 @@ $(function(){
   }
 
   // Get random ending position for reel
-  function getFinalPosition(){
-    var positions = {
+  function getFinalPositions(){
+    positions = {};
+    var options = {
       1: {drink: 'coffee', adjustment: 100},
       2: {drink: 'tea', adjustment: 300},
       3: {drink: 'espresso', adjustment: 500}
