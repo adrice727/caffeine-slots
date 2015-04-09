@@ -1,87 +1,99 @@
 $(function(){
 
-var reelsSpinning = false;
-$('#spin').on('click', function() {
-  if ( !reelsSpinning ) { 
-    play();
-    // setTimeout(stopReels, 3000);
+  var roundInProgress = false;
+  $('#spin').on('click', function() {
+    if ( !roundInProgress ) { 
+      play();
+    }
+  })
+
+  function play(){
+    reelsSpinning = true;
+    updateDisplay('spinning');
+    spinReels();
+    window.requestAnimationFrame(spinReels);
   }
-})
 
-function play(){
-  reelsSpinning = true;
-  window.requestAnimationFrame(spinReels);
-  // var spinning = setInterval(spinReels, 17);
-  // setTimeout(stopReels(spinning), 3000);
-  // var reels = $('.reels');
-  // var currentPositions = currentReelPositions();
-  // console.log(currentPositions);
-  // while ( reelsSpinning ) {
-  //   $('#reel').css('background-position-y', )
-  // }
-  // var reel1bg = $('#reel-1').css('background-position-y');
-  // console.log(reel1bg);
-}
+  $('#stop').on('click', function(){
+    console.log('calling stop');
+    stopReels = true;
+  })
 
-$('#stop').on('click', function(){
-  window.cancelAnimationFrame(animation);
-  reelsSpinning = false;
-})
-
-var animation;
-function spinReels() {
-  var current = currentReelPositions();
-  animation = window.requestAnimationFrame(spinReels);
-  $('#reel-1').css('background-position-y', parseInt(current['1'].slice(0,-2)) + 10 + 'px');
-  $('#reel-2').css('background-position-y', parseInt(current['2'].slice(0,-2)) + 10 + 'px');
-  $('#reel-3').css('background-position-y', parseInt(current['3'].slice(0,-2)) + 10 + 'px');
-}
-
-function stopReels(interval){
-  reelsSpinning = false;
-  // stopReel(1);
-  // setTimeout(stopReel(2), 500);
-  // setTimeout(stopReel(3), 1000);
-}
-
-function stopReel(id) {
-  var stop = getFinalPosition();
-  var stop = Math.floor(Math.random() * 6) + 1;
-  var reel = $('#reel-' + id);
-
-}
-
-function getFinalPosition(){
-  var positions = {
-    1: 100,
-    2: 300,
-    3: 500,
+  var reelsSpinning;
+  function spinReels(){
+    reelsSpinning = 3;
+    window.requestAnimationFrame(spinReel.bind('1'));
+    window.requestAnimationFrame(spinReel.bind('2'));
+    window.requestAnimationFrame(spinReel.bind('3'));
+    setTimeout(function(){stopReels = true;}, 3000);
   }
-  var stop = Math.floor(Math.random() * 6) + 1;
-  return positions[stop];
-}
 
-function currentReelPositions(){
-  var positions = {};
-  positions['1'] = $('#reel-1').css('background-position-y');
-  positions['2']= $('#reel-2').css('background-position-y');
-  positions['3'] = $('#reel-3').css('background-position-y');
-  return positions;
-}
+  var stopReels = false;
+  var spins = {};
+  var drinks = {};
+  var finalPositions = {}
+  function spinReel() {
+    var reel = this[0];
+    spins[reel] = window.requestAnimationFrame(spinReel.bind(reel));
+    var currentPosition = parseInt(currentReelPositions()[reel]);
+    if ( stopReels ) {
+      finalPositions[id] = finalPositions[id] || getFinalPosition();
+      if ( (currentPosition - finalPosition.adjustment) % 600 === 0 ) {
+      drinks[reel] = drinks[reel] || finalPosition.drink;
+      if ( reelsSpinning-- === 0 ) { finishRound(); }
+      window.cancelAnimationFrame(spins[reel]);
+    } else {
+      spins[reel] = window.requestAnimationFrame(spinReel.bind(reel));
+      $('#reel-' + reel).css('background-position-y', currentPosition + 20 + 'px');
+    }
+  }
 
+  // Get random ending position for reel
+  function getFinalPosition(){
+    var positions = {
+      1: {drink: 'coffee', adjustment: 100},
+      2: {drink: 'tea', adjustment: 300},
+      3: {drink: 'espresso', adjustment: 500}
+    }
+    var stop = Math.floor(Math.random() * 3) + 1;
+    return positions[stop];
+  }
 
+  function currentReelPositions(){
+    var positions = {};
+    positions['1'] = $('#reel-1').css('background-position-y');
+    positions['2']= $('#reel-2').css('background-position-y');
+    positions['3'] = $('#reel-3').css('background-position-y');
+    return positions;
+  }
 
+  function finishRound(){
+    console.log('drinks', drinks);
+    if ( drinks[1] === drinks[2] && drinks[2] === drinks[3] ) {
+      updateDisplay(drinks[1]);
+    } else {
+      updateDisplay('lose');
+    }
+    setTimeout(reset, 3000);
+  }
 
+  function reset(){
+    updateDisplay('new');
+    roundInProgress = false;
+    stopReels = false;
+    drinks = {};
+  }
 
-
-
-
-
-
-
-
-
-
-
-
+  function updateDisplay(status) {
+    var messages = {
+      'new'     : {id: 0, text: 'hit spin to play'},
+      'spinning': {id: 0, text: 'spinning' },
+      'coffee'  : {id: 1, text: 'you won a cup of coffee'},
+      'espresso': {id: 2, text: 'you won an espresso'},
+      'tea'     : {id: 3, text: 'you won a cup of tea'},
+      'lose'    : {id: 0, text: 'sorry, you didn\'t win this round'}
+    };
+    $('.message-container').text(messages[status].text);
+    return messages[status].id;
+  }
 })
