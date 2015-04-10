@@ -1,6 +1,7 @@
 
 body {
   margin: 0;
+  font-family: 'Poiret One', cursive;
 }
 
 .title-container {
@@ -14,10 +15,22 @@ body {
   color: #FFFFFF;
   font-size: 50px;
   line-height: 100px;
-  font-family: 'Poiret One', cursive;
 }
 
-.title-container:after {
+.message-container {
+  position: relative;
+  margin: 15px auto 0 auto;
+  width: 600px;
+  height: 50px;
+  text-align: center;
+  font-size: 24px;
+  line-height: 50px;
+  text-transform: uppercase;
+  border: 3px solid rgb(148,148,148);
+  border-radius: 3px;
+}
+
+.title-container:after, .message-container:after { 
   content: '';
   position: absolute;
   background: rgb(148,148,148);
@@ -31,35 +44,16 @@ body {
   z-index: -1;
 }
 
-.message-container {
-  position: relative;
-  margin: 15px auto 0 auto;
-  width: 600px;
-  height: 50px;
-  text-align: center;
-  font-family: 'Poiret One', cursive;
-  font-size: 24px;
-  line-height: 50px;
-  text-transform: uppercase;
-  border: 3px solid rgb(148,148,148);
-  border-radius: 3px;
+.title-container:after {
+  height: 20px;
 }
 
-.message-container:after {
-  content: '';
-  position: absolute;
-  background: rgb(148,148,148);
+.message-container:after { 
   height: 15px;
-  width: 20px;
-  bottom: -15px;
-  left: 50%;
-  -ms-transform: translateX(-50%);
-  -webkit-transform: translateX(-50%);
-  transform: translateX(-50%);
-  z-index: -1;
 }
 
 .slot-container {
+  position: relative;
   height: 400px;
   width: 800px;
   background: rgb(37,37,37);
@@ -101,12 +95,35 @@ body {
 #reel-3 {
   background-image: url(../img/reel3.png);
 }
+
 .reel {
   height: 100%;
   width: 100%;
   background-repeat-x: no-repeat;
   background-position-x: 50%;
   background-position-y: 500px; 
+}
+
+.prize-container {
+  position: absolute;
+  top: 2%;
+  left: 2%;
+  height: 96%;
+  width: 96%;
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+
+.prize-coffee {
+  background-image: url(../img/coffee.png);
+}
+
+.prize-tea {
+  background-image: url(../img/tea.png);
+}
+
+.prize-espresso {
+  background-image: url(../img/espresso.png);
 }
 
 .button-container {
@@ -125,6 +142,3 @@ body {
   margin: 0 auto;
   cursor: pointer;
 }
-
-
-

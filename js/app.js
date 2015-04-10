@@ -1,44 +1,51 @@
 $(function(){
 
-  var roundProgress = 'new';
+  var roundInProgress = false;
   $('#spin').on('click', function() {
-    if ( roundProgress === 'new' ) { 
+    if ( !roundInProgress ) { 
       play();
     }
   })
 
   function play(){
-    reelsSpinning = true;
-    updateDisplay('spinning');
+    roundInProgress = true;
+    updateDisplay('play', true);
     setStops();
-    console.log(finalPositions);
-    spinReels();
+    startAnimation();
   }
 
-  $('#stop').on('click', function(){
-    console.log('calling stop');
-    stopReels = true;
-  })
+  // Set random ending positions for reels
+  var finalPositions = {};
+  function setStops(){
+    var options = {
+      1: {drink: 'coffee', adjustment: 100},
+      2: {drink: 'tea', adjustment: 300},
+      3: {drink: 'espresso', adjustment: 500}
+    };
+    finalPositions['1'] = options[Math.floor(Math.random() * 3) + 1];
+    finalPositions['2'] = options[Math.floor(Math.random() * 3) + 1];
+    finalPositions['3'] = options[Math.floor(Math.random() * 3) + 1];
+  }
 
   var reelsSpinning;
-  function spinReels(){
+  var spins = {}; // animation frame ids
+  var stopReels = false;
+  function startAnimation(){
     reelsSpinning = 3;
-    window.requestAnimationFrame(spinReel.bind('1'));
-    window.requestAnimationFrame(spinReel.bind('2'));
-    window.requestAnimationFrame(spinReel.bind('3'));
+    spins['1'] = window.requestAnimationFrame(spinReel.bind('1'));
+    spins['2'] = window.requestAnimationFrame(spinReel.bind('2'));
+    spins['3'] = window.requestAnimationFrame(spinReel.bind('3'));
     setTimeout(function(){stopReels = true;}, 3000);
   }
 
-  var stopReels = false;
-  var spins = {}; // animation frames
-  var finalPositions;
   function spinReel() {
     var reel = this[0];
-    var currentPosition = parseInt(currentReelPositions(reel));
+    var currentPosition = parseInt(currentReelPosition(reel));
     if ( stopReels ) {
       if ( (currentPosition - finalPositions[reel].adjustment) % 600 === 0 ) {
         window.cancelAnimationFrame(spins[reel]);
-        if ( reelsSpinning-- === 0 ) { finishRound(); }
+        reelsSpinning--;
+        if ( !!reelsSpinning ) { finishRound(); }
       } else {
         spins[reel] = window.requestAnimationFrame(spinReel.bind(reel));
         moveReel(reel, currentPosition);
@@ -54,31 +61,14 @@ $(function(){
     reel.css('background-position-y', position + 20 + 'px');
   }
 
-  // Get random ending position for reel
-  function setStops(){
-    finalPositions = {};
-    var options = {
-      1: {drink: 'coffee', adjustment: 100},
-      2: {drink: 'tea', adjustment: 300},
-      3: {drink: 'espresso', adjustment: 500}
-    }
-    finalPositions['1'] = options[Math.floor(Math.random() * 3) + 1]
-    finalPositions['2'] = options[Math.floor(Math.random() * 3) + 1]
-    finalPositions['3'] = options[Math.floor(Math.random() * 3) + 1]
-  }
-
-  function currentReelPositions(reel){
-    var positions = {};
-    positions['1'] = $('#reel-1').css('background-position-y');
-    positions['2']= $('#reel-2').css('background-position-y');
-    positions['3'] = $('#reel-3').css('background-position-y');
-    return positions[reel];
+  function currentReelPosition(reel){
+    return $('#reel-' + reel).css('background-position-y');
   }
 
   function finishRound(){
-    console.log('drinks', drinks);
-    if ( drinks[1] === drinks[2] && drinks[2] === drinks[3] ) {
-      updateDisplay(drinks[1]);
+    var reels = finalPositions;
+    if ( reels[1].drink === reels[2].drink && reels[2].drink === reels[3].drink ) {
+      updateDisplay(reels[1].drink);
     } else {
       updateDisplay('lose');
     }
@@ -86,22 +76,32 @@ $(function(){
   }
 
   function reset(){
-    updateDisplay('new');
+    updateDisplay('new', true);
+    $('.prize-container').removeClass('prize-coffee prize-tea prize-espresso');
     roundInProgress = false;
     stopReels = false;
     drinks = {};
   }
 
-  function updateDisplay(status) {
+  function updateDisplay(status, immediate) {
     var messages = {
-      'new'     : {id: 0, text: 'hit spin to play'},
-      'spinning': {id: 0, text: 'spinning' },
+      'new'     : {id: 0, text: 'hit spin to play again'},
+      'play'    : {id: 0, text: 'game in progress' },
       'coffee'  : {id: 1, text: 'you won a cup of coffee'},
       'espresso': {id: 2, text: 'you won an espresso'},
       'tea'     : {id: 3, text: 'you won a cup of tea'},
       'lose'    : {id: 0, text: 'sorry, you didn\'t win this round'}
     };
-    $('.message-container').text(messages[status].text);
-    return messages[status].id;
+    if ( immediate ) { 
+      $('.message-container').text(messages[status].text);
+    } else {
+      setTimeout(function(){
+        $('.message-container').text(messages[status].text);
+        if ( !!messages[status].id ) {
+          $('.prize-container').addClass('prize-' + status);
+        } 
+      }, 750);
+    }
   }
-})
+
+});
