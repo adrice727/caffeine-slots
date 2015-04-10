@@ -10,8 +10,9 @@ $(function(){
   function play(){
     reelsSpinning = true;
     updateDisplay('spinning');
+    setStops();
+    console.log(finalPositions);
     spinReels();
-    window.requestAnimationFrame(spinReels);
   }
 
   $('#stop').on('click', function(){
@@ -28,49 +29,50 @@ $(function(){
     setTimeout(function(){stopReels = true;}, 3000);
   }
 
-  var finalPositions;
-  function endRound(){
-    finalPositions = getFinalPositions();
-  }
-
   var stopReels = false;
-  var spins = {};
-  var drinks = {};
+  var spins = {}; // animation frames
+  var finalPositions;
   function spinReel() {
     var reel = this[0];
-    spins[reel] = window.requestAnimationFrame(spinReel.bind(reel));
-    var currentPosition = parseInt(currentReelPositions()[reel]);
+    var currentPosition = parseInt(currentReelPositions(reel));
     if ( stopReels ) {
-      var finalPosition = getFinalPosition();
-      drinks[reel] = finalPosition.drink;
-      while ( (currentPosition - finalPosition.adjustment) % 600 !== 0 ) {
-        $('#reel-' + reel).css('background-position-y', currentPosition + 20 + 'px');
+      if ( (currentPosition - finalPositions[reel].adjustment) % 600 === 0 ) {
+        window.cancelAnimationFrame(spins[reel]);
+        if ( reelsSpinning-- === 0 ) { finishRound(); }
+      } else {
+        spins[reel] = window.requestAnimationFrame(spinReel.bind(reel));
+        moveReel(reel, currentPosition);
       }
-      if ( reelsSpinning-- === 0 ) { finishRound(); }
     } else {
       spins[reel] = window.requestAnimationFrame(spinReel.bind(reel));
-      $('#reel-' + reel).css('background-position-y', currentPosition + 20 + 'px');
+      moveReel(reel, currentPosition);
     }
   }
 
+  function moveReel(id, position) {
+    var reel = $('#reel-' + id);
+    reel.css('background-position-y', position + 20 + 'px');
+  }
+
   // Get random ending position for reel
-  function getFinalPositions(){
-    positions = {};
+  function setStops(){
+    finalPositions = {};
     var options = {
       1: {drink: 'coffee', adjustment: 100},
       2: {drink: 'tea', adjustment: 300},
       3: {drink: 'espresso', adjustment: 500}
     }
-    var stop = Math.floor(Math.random() * 3) + 1;
-    return positions[stop];
+    finalPositions['1'] = options[Math.floor(Math.random() * 3) + 1]
+    finalPositions['2'] = options[Math.floor(Math.random() * 3) + 1]
+    finalPositions['3'] = options[Math.floor(Math.random() * 3) + 1]
   }
 
-  function currentReelPositions(){
+  function currentReelPositions(reel){
     var positions = {};
     positions['1'] = $('#reel-1').css('background-position-y');
     positions['2']= $('#reel-2').css('background-position-y');
     positions['3'] = $('#reel-3').css('background-position-y');
-    return positions;
+    return positions[reel];
   }
 
   function finishRound(){
